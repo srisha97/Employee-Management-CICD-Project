@@ -1,0 +1,42 @@
+services:
+  database:
+    image: mysql:8.0
+    container_name: employee-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: employee_db
+      MYSQL_USER: employee
+      MYSQL_PASSWORD: employee123
+    volumes:
+      - employee-data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    image: employee-backend:latest
+    container_name: employee-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/employee_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: employee
+      SPRING_DATASOURCE_PASSWORD: employee123
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    image: employee-frontend:latest
+    container_name: employee-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  employee-data:
