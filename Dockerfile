@@ -1,5 +1,5 @@
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html app.js style.css /usr/share/nginx/html/
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/employee-management-1.0.0.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
